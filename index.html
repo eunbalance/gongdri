@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>공드리 · 이국적인 언어로 새벽 토크</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@font-face{font-family:"Pretendard";src:url("fonts/pretendard.woff2") format("woff2-variations"),url("fonts/pretendard.woff2") format("woff2");font-weight:45 920;font-display:swap}
+/* VOICE: 공드리 — 차분하고 다정한 1:1 회화 수업, 밝고 여백 많은 화면
+   IDEA: "How it works" 안내 페이지처럼 — 왼쪽엔 둥근 삿포로 사진 위에 떠 있는 카드, 오른쪽엔 세로 단계 목록
+   PICTURE: 실사 눈 마을 사진(내리는 눈) + 사진 위 플로팅 카드(오늘의 수업 / 말하는 초콜릿 볼)
+   COLOUR and TYPE: Hellblau #A0BEDA + Schokobraun #34211B, 삿포로 눈 저녁(눈 흰색·라벤더·분홍 노을) 보조 · Pretendard
+   LAYOUT: 가운데 제목 → 2단(사진 | 단계/대화), 820px 이하 사진 배너 위·내용 아래 */
+:root{color-scheme:light;--choc:#34211B;--peach:#A0BEDA;--beige:#F4F7FB;--amber:#E9CFD8;--olive:#7F9FC4;
+--ink:#34211B;--mute:#6e625e;--line:#dde6ef;--white:#fff;--peachSoft:#dde8f3;--oliveInk:#3F6489;--lav:#BDB8DA}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;position:relative;min-height:100vh;background:var(--beige);color:var(--ink);font:16px/1.6 "Pretendard",system-ui,-apple-system,sans-serif;overflow-x:clip;word-break:keep-all;letter-spacing:-.01em}
+h1,h2,h3{font-family:"Pretendard",system-ui,sans-serif;line-height:1.15;letter-spacing:-.01em;margin:0}
+button,input,select{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;border:0;border-radius:999px;min-height:44px;padding:0 18px;background:var(--white);font-weight:500;white-space:nowrap}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--choc);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:1180px;margin:0 auto;padding:18px max(4vw,16px) 0}
+.brand{font:700 28px "Pretendard",system-ui,-apple-system,sans-serif;color:var(--choc)}
+.onair{display:inline-block;font:600 11px "Pretendard",system-ui,-apple-system,sans-serif;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--line);color:var(--mute);margin-left:8px;vertical-align:middle}
+body.live .onair{background:var(--choc);color:#fff}
+.tabs{display:flex;gap:4px;background:var(--white);padding:4px;border-radius:999px;box-shadow:0 4px 14px -8px rgba(40,55,80,.3)}
+.tabs button{background:transparent;min-height:38px;font-size:14px}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--beige)}
+.hero{text-align:center;padding:26px 16px 10px}
+.eyebrow{font-size:16px;color:var(--mute)}
+.hero h1{font-size:clamp(24px,3vw,32px);margin:6px 0 8px}
+.hero p{margin:0;color:var(--mute);font-size:18px}
+.grid{max-width:1180px;margin:0 auto;padding:22px max(4vw,16px) 140px;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.15fr);gap:clamp(28px,5vw,72px);align-items:start}
+.photo{position:sticky;top:20px;aspect-ratio:4/5;border-radius:36px;background:url("bg.jpg") 38% 50%/cover no-repeat;box-shadow:0 30px 50px -30px rgba(40,55,80,.45);overflow:visible}
+.photo .snow{position:absolute;inset:0;border-radius:36px;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.95) 1.6px,transparent 2.2px),radial-gradient(circle,rgba(255,255,255,.7) 1px,transparent 1.6px);background-size:120px 140px,80px 100px;animation:fall 14s linear infinite}
+@keyframes fall{from{background-position:0 0,30px 0}to{background-position:60px 560px,-20px 400px}}
+.photo .veil{position:absolute;inset:0;border-radius:36px;background:linear-gradient(180deg,rgba(160,190,218,0) 55%,rgba(160,190,218,.28));pointer-events:none}
+.float{position:absolute;background:var(--white);border-radius:20px;box-shadow:0 18px 40px -16px rgba(40,55,80,.45)}
+.tag{top:22px;right:-14px;padding:8px 14px;font:600 13px "Pretendard",system-ui,-apple-system,sans-serif;background:var(--olive);color:#fff;border-radius:999px}
+.brief{left:-18px;bottom:26px;width:min(240px,70%);padding:16px}
+.brief h3{font-size:15px;margin-bottom:10px}
+.brief dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;font-size:15px}
+.brief dt{color:var(--mute)}.brief dd{margin:0;font-weight:500}
+.stagecard{left:-18px;right:24px;bottom:26px;padding:16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+body:not([data-view=vTalk]) .stagecard{display:none}
+body[data-view=vTalk] .brief{display:none}
+.orb{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff;position:relative;background:radial-gradient(circle at 34% 30%,#fff 0 6%,#dde8f3 18%,var(--peach) 46%,#5b7fa6);box-shadow:0 8px 14px -6px rgba(40,55,80,.45)}
+.orb svg{width:26px;height:26px}
+.orb::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:3px solid transparent}
+.orb.speaking::after{border-color:var(--peach);animation:pulse 1.2s ease-out infinite}
+.orb.listening{background:radial-gradient(circle at 34% 30%,#fff 0 5%,#8a6a5e 18%,#34211B 65%,#1e120e)}
+.orb.listening::after{border-color:var(--choc);animation:pulse 1.2s ease-out infinite}
+.orb.thinking::after{border:3px dotted var(--lav);animation:spin 3s linear infinite}
+@keyframes pulse{from{transform:scale(1);opacity:1}to{transform:scale(1.4);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.orb::after,.photo .snow{animation:none!important}}
+.stagecard h2{font-size:21px}.stagecard .sub{color:var(--mute);font-size:15px;margin-top:2px}
+.toggles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;grid-column:1/-1}
+.toggles button{background:var(--beige);min-height:36px;font-size:14px;padding:0 12px}
+.toggles button[aria-pressed=true]{background:var(--peach)}
+#finish{background:var(--choc);color:#fff}
+/* steps */
+.steps{list-style:none;margin:0;padding:0}
+.step{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr);gap:16px;padding:18px 0 22px 22px}
+.step::before{content:"";position:absolute;left:-2px;top:16px;bottom:16px;width:3px;border-radius:3px;background:transparent;transition:background .2s}
+.step:hover::before,.step:focus-within::before{background:var(--ink)}
+/* 하늘색 투명 글래스 아이콘 — 그림 자체가 유리 */
+.ico{width:48px;height:48px;display:grid;place-items:center;filter:drop-shadow(0 6px 8px rgba(70,110,160,.25))}
+.ico svg{width:52px;height:52px;overflow:visible}
+
+
+.step h3{font-size:19px;margin:2px 0 4px}
+.step p{margin:0 0 12px;color:var(--mute);font-size:15px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--white)}
+.chip[aria-pressed=true]{background:var(--peach);border-color:var(--peach);color:var(--ink);font-weight:700}
+.big{background:var(--choc);color:#fff;font-weight:700;min-height:52px;padding:0 30px;font-size:17px;box-shadow:0 12px 24px -12px rgba(52,33,27,.6)}
+input[type=text]{width:100%;min-height:46px;border:1px solid var(--line);border-radius:999px;padding:0 18px;background:var(--white);font-size:16px}
+select{min-height:44px;border:1px solid var(--line);border-radius:999px;padding:0 14px;background:var(--white)}
+.startrow{padding-left:22px;margin-top:6px}
+.note{font-size:14px;color:var(--mute);margin-top:12px}
+.warn{background:var(--peachSoft);border-radius:14px;padding:10px 14px;font-size:14px;margin-top:12px}
+/* talk */
+.log{display:flex;flex-direction:column;gap:12px}
+.log:empty::before{content:"선생님이 곧 말을 걸어요…";color:var(--mute)}
+.msg{max-width:88%;padding:13px 18px;border-radius:20px 20px 20px 6px;background:var(--white);box-shadow:0 8px 20px -14px rgba(40,55,80,.45)}
+.msg.me{align-self:flex-end;border-radius:20px 20px 6px 20px;background:var(--peachSoft);box-shadow:none}
+.msg .t{font-size:17px}.msg .ko{font-size:14px;color:var(--mute);margin-top:6px;display:none}
+body.show-ko .msg .ko{display:block}
+body.hide-text .msg.tutor .t{filter:blur(7px);user-select:none;cursor:pointer}
+.msg.tutor.reveal .t{filter:none!important}
+.msg .tools{margin-top:8px;display:flex;gap:6px}.msg .tools button{min-height:34px;font-size:13px;padding:0 12px;background:var(--beige)}
+.fix{align-self:flex-end;max-width:88%;border-left:4px solid var(--olive);background:var(--white);border-radius:12px;padding:10px 14px;font-size:14px}
+.fix b{color:var(--oliveInk);font-size:16px}.fix .done{color:var(--oliveInk);font-weight:700}
+.retry{background:rgba(233,199,212,.55);border-radius:14px;padding:10px 14px;font-size:15px;margin-bottom:8px;display:none}
+.retry.on{display:block}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 -10px 30px -20px rgba(40,55,80,.5);padding:10px max(4vw,14px) calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:860px;margin:0 auto}
+.bar .row{flex-wrap:nowrap}
+.mic{width:56px;min-width:56px;height:56px;border-radius:50%;background:var(--choc);color:#fff;padding:0;display:grid;place-items:center}
+.mic.on{background:var(--olive)}.mic svg{width:26px;height:26px}
+#send{background:var(--beige)}
+/* summary & quiz */
+.card{background:var(--white);border-radius:24px;padding:24px;box-shadow:0 18px 40px -24px rgba(40,55,80,.45)}
+.sum table{width:100%;border-collapse:collapse;font-size:15px;margin-top:8px}
+.sum th,.sum td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.sum th{font-size:13px;color:var(--mute);font-weight:500}
+.sum h3{font-size:19px;margin:22px 0 6px}
+.sum ul{padding-left:20px;margin:6px 0}
+.status{font-size:14px;margin-top:14px;padding:12px 16px;border-radius:14px;background:var(--beige)}
+.qcard h2{font-size:24px;margin:8px 0 14px}
+.score{font:700 44px "Pretendard",system-ui,-apple-system,sans-serif;color:var(--choc)}
+.sess{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.sess input{width:22px;height:22px;accent-color:var(--choc)}
+[hidden]{display:none!important}
+/* decor: 몽글한 글로우 오브 + 얇은 궤도선 + 작은 별 */
+.top,.hero,.grid{position:relative;z-index:1}
+.decor{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;min-height:100%}
+.orbg{position:absolute;right:-18vw;top:120px;width:clamp(520px,62vw,900px);aspect-ratio:1;border-radius:50%;
+background:radial-gradient(circle at 50% 50%,rgba(150,170,210,.6) 0%,rgba(160,190,218,.72) 26%,rgba(189,184,218,.45) 46%,rgba(233,199,212,.3) 58%,rgba(233,199,212,0) 70%);filter:blur(8px)}
+.orbg2{position:absolute;left:-12vw;bottom:-10vw;width:clamp(360px,40vw,620px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(233,199,212,.45),rgba(233,199,212,0) 65%)}
+.orbit{position:absolute;right:-4vw;top:clamp(380px,46vw,560px);width:clamp(420px,52vw,760px);transform:rotate(-14deg);stroke:var(--ink);stroke-width:1.2;opacity:.4}
+.spark{position:absolute;color:var(--ink);width:14px;height:14px}
+.spark svg{width:100%;height:100%;display:block}
+.glow{color:#fff;width:46px;height:46px;filter:drop-shadow(0 0 10px rgba(160,190,218,.95)) drop-shadow(0 0 24px rgba(189,184,218,.8))}
+.g1{left:9%;top:92px}
+.s1{left:24%;top:200px;width:12px;height:12px}.s2{right:22%;top:96px;width:18px;height:18px}.s3{right:8%;top:clamp(470px,54vw,640px);width:30px;height:30px}
+.s4{right:20%;top:clamp(560px,62vw,720px);width:12px;height:12px}.s5{left:44%;top:clamp(700px,72vw,860px);width:16px;height:16px}
+.hero .defn{text-wrap:balance;max-width:440px;margin:14px auto 0;font-size:15px;color:var(--mute);line-height:1.5}
+.hero .defn b{color:var(--ink);font-weight:700;font-style:italic;font-size:16px;margin-right:4px}
+@media(max-width:820px){.orbg{right:-40vw;top:60px}.orbit{top:330px;right:-20vw}.s5{display:none}}
+@media(max-width:600px){.g1{left:4%;top:120px;width:34px;height:34px}.s1{display:none}.s2{right:5%;top:74px;width:14px;height:14px}}
+/* 반투명 유리 패널 — 깔끔하게 */
+.steps{background:rgba(255,255,255,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.9);border-radius:32px;padding:10px 24px 10px 0;box-shadow:0 30px 60px -40px rgba(40,55,80,.35)}
+.step{border-left:1px solid rgba(52,33,27,.12);margin-left:24px}
+.float{background:rgba(255,255,255,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 40px -24px rgba(40,55,80,.4)}
+.tag{background:rgba(255,255,255,.72);color:var(--choc)}
+.msg{background:rgba(255,255,255,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 14px 30px -22px rgba(40,55,80,.4)}
+.msg.me{background:rgba(160,190,218,.42)}
+.card{background:rgba(255,255,255,.62);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.9)}
+.chip{background:rgba(255,255,255,.6);border-color:rgba(52,33,27,.12)}
+@media(max-width:600px){.steps{padding-right:14px}.step{margin-left:14px}}
+
+@media(max-width:820px){.grid{grid-template-columns:minmax(0,1fr);gap:56px}.photo{position:relative;top:0;aspect-ratio:auto;height:300px;margin:0 6px}.brief{left:12px;bottom:-30px}.stagecard{left:12px;right:12px;bottom:-40px}.tag{right:12px}}
+@media(max-width:600px){.top{flex-wrap:wrap;gap:10px}.hero{padding-top:14px}.step{grid-template-columns:40px minmax(0,1fr);gap:12px;padding-left:16px}.ico{width:40px;height:40px}.ico svg{width:38px;height:38px}.msg,.fix{max-width:94%}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:7em}.stack td::before{content:attr(data-l);float:inline-start;width:6.5em;margin-inline-start:-7em;color:var(--mute);font-size:13px}}
+</style>
+</head>
+<body>
+<div class="decor" aria-hidden="true">
+  <div class="orbg"></div>
+  <div class="orbg2"></div>
+  <svg class="orbit" viewBox="0 0 600 200" fill="none"><ellipse cx="300" cy="100" rx="290" ry="64"/><ellipse cx="300" cy="104" rx="250" ry="48"/></svg>
+  <span class="spark glow g1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C12.6 8 16 11.4 24 12 16 12.6 12.6 16 12 24 11.4 16 8 12.6 0 12 8 11.4 11.4 8 12 0Z"/></svg></span>
+  <span class="spark s1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C12.6 8 16 11.4 24 12 16 12.6 12.6 16 12 24 11.4 16 8 12.6 0 12 8 11.4 11.4 8 12 0Z"/></svg></span><span class="spark s2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C12.6 8 16 11.4 24 12 16 12.6 12.6 16 12 24 11.4 16 8 12.6 0 12 8 11.4 11.4 8 12 0Z"/></svg></span><span class="spark s3"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C12.6 8 16 11.4 24 12 16 12.6 12.6 16 12 24 11.4 16 8 12.6 0 12 8 11.4 11.4 8 12 0Z"/></svg></span><span class="spark s4"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C12.6 8 16 11.4 24 12 16 12.6 12.6 16 12 24 11.4 16 8 12.6 0 12 8 11.4 11.4 8 12 0Z"/></svg></span><span class="spark s5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C12.6 8 16 11.4 24 12 16 12.6 12.6 16 12 24 11.4 16 8 12.6 0 12 8 11.4 11.4 8 12 0Z"/></svg></span>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".3" stop-color="#d9e7f5" stop-opacity=".8"/><stop offset=".62" stop-color="#A0BEDA" stop-opacity=".95"/><stop offset="1" stop-color="#557eaf"/></linearGradient>
+<linearGradient id="gRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#3f6489" stop-opacity=".55"/></linearGradient>
+<linearGradient id="gIris" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ffc4d6" stop-opacity=".55"/><stop offset=".45" stop-color="#bfe0ff" stop-opacity=".1"/><stop offset=".8" stop-color="#fff2b8" stop-opacity=".45"/></linearGradient>
+<radialGradient id="gShine" cx=".3" cy=".25" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs></svg>
+<div class="top">
+  <div class="brand">공드리<span class="onair">ON AIR</span></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tabTalk" aria-selected="true">회화</button>
+    <button role="tab" id="tabQuiz" aria-selected="false">복습 퀴즈</button>
+  </div>
+</div>
+<div class="hero">
+  <div class="eyebrow">영어 · 프랑스어 말하기</div>
+  <h1>이국적인 언어로 새벽 토크</h1>
+  <p class="defn"><b>gongdri</b>( n. ) 눈 오는 날, 하루 한 마디씩 말이 피어나는 시간</p>
+</div>
+
+<main class="grid">
+  <aside class="photo" aria-label="삿포로 눈 마을 사진">
+    <div class="snow" aria-hidden="true"></div><div class="veil" aria-hidden="true"></div>
+    <div class="float tag">Sapporo · Winter</div>
+    <div class="float brief">
+      <h3>오늘의 수업</h3>
+      <dl><dt>언어</dt><dd id="bLang">English</dd><dt>난이도</dt><dd id="bLevel">중급</dd><dt>주제</dt><dd id="bTopic">첫 출근·회사 생활</dd></dl>
+    </div>
+    <div class="float stagecard">
+      <div class="orb" id="orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg></div>
+      <div><h2 id="stTitle">준비 중</h2><div class="sub" id="stSub"></div></div>
+      <div class="toggles">
+        <button id="tgText" aria-pressed="true">원문 텍스트</button>
+        <button id="tgKo" aria-pressed="false">한국어 해석</button>
+        <button id="tgAuto" aria-pressed="true">자동 전송</button>
+        <button id="finish">완료</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="col">
+  <section id="vSetup">
+    <ol class="steps">
+      <li class="step"><div class="ico"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" fill="url(#gBody)" stroke="url(#gRim)" stroke-width="1.4"/><circle cx="24" cy="24" r="17" fill="url(#gIris)"/><g fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.3"><ellipse cx="24" cy="24" rx="7.5" ry="17"/><path d="M7 24h34M10 15h28M10 33h28"/></g><ellipse cx="17" cy="15" rx="7" ry="4.5" fill="url(#gShine)" transform="rotate(-30 17 15)"/></svg></div>
+        <div><h3>언어 고르기</h3><p>오늘 연습할 언어를 골라요.</p>
+        <div class="row" id="langs"><button class="chip" data-v="en" aria-pressed="true">English</button><button class="chip" data-v="fr" aria-pressed="false">Français</button></div></div></li>
+      <li class="step"><div class="ico"><svg viewBox="0 0 48 48"><rect x="7" y="27" width="9" height="15" rx="4.5" fill="url(#gBody)" stroke="url(#gRim)" stroke-width="1.4"/><rect x="19.5" y="18" width="9" height="24" rx="4.5" fill="url(#gBody)" stroke="url(#gRim)" stroke-width="1.4"/><rect x="32" y="7" width="9" height="35" rx="4.5" fill="url(#gBody)" stroke="url(#gRim)" stroke-width="1.4"/><g fill="url(#gIris)"><rect x="7" y="27" width="9" height="15" rx="4.5"/><rect x="19.5" y="18" width="9" height="24" rx="4.5"/><rect x="32" y="7" width="9" height="35" rx="4.5"/></g><g fill="#fff" fill-opacity=".85"><rect x="9" y="29.5" width="2.2" height="7" rx="1.1"/><rect x="21.5" y="20.5" width="2.2" height="12" rx="1.1"/><rect x="34" y="9.5" width="2.2" height="18" rx="1.1"/></g></svg></div>
+        <div><h3>난이도 정하기</h3><p>문장 길이와 표현 수준이 달라져요.</p>
+        <div class="row" id="levels"><button class="chip" data-v="초급" aria-pressed="false">초급 · 짧고 쉬운 문장</button><button class="chip" data-v="중급" aria-pressed="true">중급 · 일상 대화</button><button class="chip" data-v="고급" aria-pressed="false">고급 · 업무·관용 표현</button></div></div></li>
+      <li class="step"><div class="ico"><svg viewBox="0 0 48 48"><path d="M12 7h24a8 8 0 0 1 8 8v12a8 8 0 0 1-8 8H21l-9 7v-7a8 8 0 0 1-8-8V15a8 8 0 0 1 8-8z" fill="url(#gBody)" stroke="url(#gRim)" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 7h24a8 8 0 0 1 8 8v12a8 8 0 0 1-8 8H21l-9 7v-7a8 8 0 0 1-8-8V15a8 8 0 0 1 8-8z" fill="url(#gIris)"/><ellipse cx="16" cy="13" rx="9" ry="3.6" fill="url(#gShine)"/><g fill="#fff" fill-opacity=".9"><circle cx="16" cy="21" r="2.4"/><circle cx="24" cy="21" r="2.4"/><circle cx="32" cy="21" r="2.4"/></g></svg></div>
+        <div><h3>주제 고르기</h3><p>골라도 되고, 직접 써도 돼요.</p>
+        <div class="row" id="topics"></div>
+        <input type="text" id="customTopic" placeholder="직접 입력 (예: 클라이언트에게 일정 지연 설명하기)" style="margin-top:10px"></div></li>
+      <li class="step"><div class="ico"><svg viewBox="0 0 48 48"><g fill="url(#gBody)" stroke="url(#gRim)" stroke-width="1.4"><rect x="4" y="19" width="6.5" height="10" rx="3.25"/><rect x="12.5" y="12" width="6.5" height="24" rx="3.25"/><rect x="21" y="5" width="6.5" height="38" rx="3.25"/><rect x="29.5" y="12" width="6.5" height="24" rx="3.25"/><rect x="38" y="19" width="6.5" height="10" rx="3.25"/></g><g fill="url(#gIris)"><rect x="12.5" y="12" width="6.5" height="24" rx="3.25"/><rect x="21" y="5" width="6.5" height="38" rx="3.25"/><rect x="29.5" y="12" width="6.5" height="24" rx="3.25"/></g><g fill="#fff" fill-opacity=".85"><rect x="14" y="14.5" width="1.8" height="9" rx=".9"/><rect x="22.5" y="7.5" width="1.8" height="14" rx=".9"/><rect x="31" y="14.5" width="1.8" height="9" rx=".9"/></g></svg></div>
+        <div><h3>목소리 · 속도 · AI 모델</h3><p>AI는 이 PC 안에서 돌아가요. 처음 한 번만 모델을 받아요.</p>
+        <div class="row"><select id="voice"><option value="">기본 목소리</option></select>
+        <select id="rate"><option value="0.8">천천히</option><option value="0.9" selected>조금 천천히</option><option value="1">보통</option><option value="1.1">빠르게</option></select></div>
+        <div class="row" style="margin-top:10px"><select id="model">
+          <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">가벼움 · 약 1.6GB</option>
+          <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC" selected>보통(추천) · 약 2.5GB</option>
+          <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">고품질 · 약 5.1GB</option></select>
+          <button id="preload">AI 미리 받기</button></div>
+        <p class="note" id="mProg"></p>
+        <details style="margin-top:10px"><summary class="note" style="cursor:pointer">나에 대해 (대화 맞춤용, 이 브라우저에만 저장)</summary>
+        <textarea id="about" rows="4" style="width:100%;margin-top:8px;border:1px solid var(--line);border-radius:16px;padding:10px 14px;font:inherit;background:var(--white)"></textarea></details>
+        </div></li>
+    </ol>
+    <div class="startrow"><button class="big" id="start">대화 시작</button>
+    <div id="capWarn"></div>
+    <p class="note">마이크로 말하면 글자로 바뀌고, 말을 멈추면 자동으로 보내져요. 어색한 문장은 바로 고쳐주고 다시 말해보게 해요. 끝나면 <b>완료</b>를 누르세요. 교정 노트와 퀴즈를 만들고, 노션에 붙여넣을 수 있게 정리해줘요.</p></div>
+  </section>
+
+  <section id="vTalk" hidden><div class="log" id="log" aria-live="polite"></div></section>
+  <section id="vSum" class="card sum" hidden></section>
+  <section id="vQuiz" class="card" hidden></section>
+  </div>
+</main>
+
+<div class="bar" id="bar" hidden>
+  <div class="in">
+    <div class="retry" id="retry"></div>
+    <div class="row">
+      <button class="mic" id="mic" aria-label="말하기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <input type="text" id="inp" placeholder="말하거나 입력하세요" autocomplete="off">
+      <button id="send">보내기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+{
+const DS = "423d3168-483f-8112-b24b-000b6d5b2cd9";
+const DEFAULT_PROFILE = `Learner: Eunsu, a Korean UX/UI designer & planner who recently started a new job and commutes by subway. Her work involves RFPs, IA, screen specifications, test scenarios and client projects (finance, telecom, airlines). Interests: reading, running and photography in nature, world history, art, space, travel (dreams of writing for a travel documentary), cafés, and building a running app called "Space Run". Recently studied — English: teamwork & collaboration, professional emails, softening language & polite requests. French: months & seasons, pouvoir/vouloir/devoir, near future (aller + infinitif). Use these naturally for personal questions now and then, but never invent facts about her; ask instead.`;
+const getProfile = () => { try{ return localStorage.getItem("gd-about") || DEFAULT_PROFILE; }catch(e){ return DEFAULT_PROFILE; } };
+const TOPICS = ["첫 출근·회사 생활","회의·협업","디자인 리뷰·피드백","출퇴근·일상","카페에서 주문하기","여행 계획","러닝·운동","취미(독서·사진·전시)","자기소개","자유 대화"];
+const LV = {"초급":"beginner (CEFR A1–A2): 1–2 very short, simple sentences, present tense, common words","중급":"intermediate (B1): natural everyday sentences, 2–3 per turn, some past/future","고급":"advanced (B2–C1): natural, idiomatic, workplace nuance, 2–4 sentences"};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const S = {lang:"en", level:"중급", topic:TOPICS[0], history:[], fixes:[], retry:null, busy:false, base:"", started:0};
+let tts=null, dict=null, sample=null, mcp=null, db=null, user=null, listening=false;
+const use = n => (window.claude && claude.use) ? claude.use(n).catch(()=>null) : Promise.resolve(null);
+
+/* ---------- setup UI ---------- */
+$("topics").innerHTML = TOPICS.map((t,i)=>`<button class="chip" data-v="${esc(t)}" aria-pressed="${i===0}">${esc(t)}</button>`).join("");
+function chips(id, key){ $(id).addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; S[key]=b.dataset.v; for(const x of $(id).children) x.setAttribute("aria-pressed", x===b); brief(); }); }
+function brief(){ fillVoices(); $("bLang").textContent = S.lang==="en"?"English":"Français"; $("bLevel").textContent=S.level; $("bTopic").textContent = $("customTopic").value.trim() || S.topic; }
+$("customTopic").addEventListener("input", brief);
+chips("langs","lang"); chips("levels","level"); chips("topics","topic"); document.body.dataset.view="vSetup";
+let PREFS={}; try{ PREFS=JSON.parse(localStorage.getItem("gd-prefs")||"{}"); }catch(e){}
+if(PREFS.rate) $("rate").value=PREFS.rate; if(PREFS.model) $("model").value=PREFS.model;
+try{ $("about").value = getProfile(); }catch(e){}
+$("about").addEventListener("change",()=>{ try{ localStorage.setItem("gd-about", $("about").value.trim()||DEFAULT_PROFILE); }catch(e){} });
+const savePrefs=()=>{ PREFS.rate=$("rate").value; PREFS.model=$("model").value; PREFS["voice_"+S.lang]=$("voice").value; try{ localStorage.setItem("gd-prefs", JSON.stringify(PREFS)); }catch(e){} };
+$("voice").onchange=savePrefs; $("rate").onchange=savePrefs; $("model").onchange=savePrefs;
+function fillVoices(){
+  if(!("speechSynthesis" in window)) return;
+  const vs=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith(S.lang));
+  $("voice").innerHTML='<option value="">기본 목소리</option>'+vs.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("");
+  const want=PREFS["voice_"+S.lang]; if(want && vs.some(v=>v.name===want)) $("voice").value=want;
+}
+if("speechSynthesis" in window){ speechSynthesis.onvoiceschanged=fillVoices; fillVoices(); }
+
+function show(v){ document.body.dataset.view=v; for(const id of ["vSetup","vTalk","vSum","vQuiz"]) $(id).hidden = id!==v; $("bar").hidden = v!=="vTalk"; S.mode = v==="vQuiz" ? "quiz" : "talk"; if(listening && dict) dict.stop().catch(()=>{}); }
+$("tabTalk").onclick=()=>{ tab("talk"); show(S.history.length ? "vTalk" : "vSetup"); };
+$("tabQuiz").onclick=()=>{ tab("quiz"); show("vQuiz"); renderSessions(); };
+function tab(t){ $("tabTalk").setAttribute("aria-selected", t==="talk"); $("tabQuiz").setAttribute("aria-selected", t==="quiz"); }
+
+/* ---------- browser voice (free) ---------- */
+function makeTTS(){
+  if(!("speechSynthesis" in window)) return null;
+  const synth=speechSynthesis; let cb=()=>{};
+  const pick=(lang,name)=>{ const vs=synth.getVoices(); return (name && vs.find(v=>v.name===name)) || vs.find(v=>v.lang.toLowerCase().startsWith(lang)); };
+  return {
+    speak(text,{voice,rate,language}={}){ return new Promise((res,rej)=>{
+      synth.cancel(); const u=new SpeechSynthesisUtterance(text);
+      u.lang = language==="fr" ? "fr-FR" : "en-US"; const v=pick(language||"en", voice); if(v) u.voice=v; u.rate=rate||1;
+      u.onstart=()=>cb({state:"speaking"}); u.onend=()=>{ cb({state:"idle"}); res(); }; u.onerror=e=>{ cb({state:"idle"}); rej(e); };
+      synth.speak(u); }); },
+    stop(){ synth.cancel(); cb({state:"idle"}); },
+    onState(f){ cb=f; }
+  };
+}
+function makeSTT(){
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition; if(!R) return null;
+  let pf=()=>{}, ff=()=>{}, sf=()=>{}, rec=null, endRes=null;
+  return {
+    lang:"en-US",
+    onPartial(f){ pf=f; }, onFinal(f){ ff=f; }, onState(f){ sf=f; },
+    start(){ return new Promise((res,rej)=>{ try{
+      rec=new R(); rec.lang=this.lang; rec.interimResults=true; rec.continuous=false;
+      rec.onstart=()=>{ sf({state:"listening"}); res(); };
+      rec.onresult=ev=>{ let interim=""; for(let i=ev.resultIndex;i<ev.results.length;i++){ const r=ev.results[i]; if(r.isFinal) ff({text:r[0].transcript.trim()}); else interim+=r[0].transcript; } if(interim) pf({text:interim.trim()}); };
+      rec.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed") rej({code:"not_granted"}); };
+      rec.onend=()=>{ rec=null; sf({state:"idle"}); if(endRes){ endRes(); endRes=null; } };
+      rec.start(); }catch(e){ rej(e); } }); },
+    stop(){ return new Promise(res=>{ if(!rec){ res(); return; } endRes=res; rec.stop(); }); }
+  };
+}
+
+/* ---------- local AI (WebLLM, runs on this PC) ---------- */
+let engine=null, engineId=null, loading=null;
+async function loadEngine(){
+  const id=$("model").value;
+  if(engine && engineId===id) return engine;
+  if(loading) return loading;
+  if(!navigator.gpu) throw {code:"no_webgpu"};
+  loading=(async()=>{
+    const webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.89");
+    const prog=r=>{ const pct=Math.round((r.progress||0)*100);
+      $("mProg").textContent=`AI 준비 중 ${pct}% · 처음 한 번만 받고, 다음부터는 바로 열려요`;
+      if(S.mode==="talk" && !$("vTalk").hidden){ $("stTitle").textContent="AI 불러오는 중"; $("stSub").textContent=pct+"%"; } };
+    if(engine){ try{ await engine.unload(); }catch(e){} engine=null; }
+    engine = await webllm.CreateMLCEngine(id, {initProgressCallback:prog});
+    engineId=id; $("mProg").textContent="AI 준비 완료"; return engine;
+  })();
+  try{ return await loading; } finally{ loading=null; }
+}
+$("preload").onclick=()=>{ $("preload").disabled=true; loadEngine().catch(e=>{ $("mProg").textContent = e&&e.code==="no_webgpu" ? "이 브라우저는 WebGPU를 지원하지 않아요. PC용 최신 크롬이나 엣지에서 열어주세요." : "AI를 받지 못했어요. 인터넷 연결과 저장 공간을 확인해 주세요."; }).finally(()=>{ $("preload").disabled=false; }); };
+
+/* ---------- capabilities ---------- */
+(async()=>{
+  tts=makeTTS(); dict=makeSTT(); sample={local:true};
+  const w=[];
+  if(!navigator.gpu) w.push("이 브라우저는 WebGPU를 지원하지 않아 AI를 돌릴 수 없어요. PC용 최신 크롬이나 엣지에서 열어주세요.");
+  if(!tts) w.push("이 브라우저는 음성 재생을 지원하지 않아요. 글자로만 나와요.");
+  if(!dict) w.push("이 브라우저는 음성 인식을 지원하지 않아요. 크롬에서 열거나 직접 입력해 주세요.");
+  $("capWarn").innerHTML = w.map(x=>`<div class="warn">${esc(x)}</div>`).join("");
+  if(!dict) $("mic").hidden = true;
+  if(tts) tts.onState(({state})=>{ if(state==="speaking") orb("speaking"); else if(!listening && !S.busy) orb("idle"); });
+  if(dict){
+    const tgt=()=> (S.mode==="quiz" ? $("qIn") : $("inp"));
+    dict.onPartial(({text})=>{ const t=tgt(); if(t) t.value = (S.base+" "+text).trim(); });
+    dict.onFinal(({text})=>{ S.base = (S.base+" "+text).trim(); const t=tgt(); if(t) t.value=S.base; });
+    dict.onState(({state})=>{
+      listening = state==="listening";
+      $("mic").classList.toggle("on", listening); $("qMic")?.classList.toggle("on", listening);
+      if(S.mode==="quiz") return;
+      if(listening) orb("listening");
+      else { if(!S.busy) orb("idle"); if($("tgAuto").getAttribute("aria-pressed")==="true" && $("inp").value.trim()) send(); }
+    });
+  }
+})();
+
+/* ---------- stage ---------- */
+const ST = {idle:["당신 차례예요","마이크를 누르고 말해보세요"],speaking:["선생님이 말하는 중","잘 들어보세요"],listening:["듣고 있어요","다 말하면 마이크를 한 번 더 누르세요"],thinking:["생각 중","답을 준비하고 있어요"]};
+function orb(s){ $("orb").className="orb "+s; $("stTitle").textContent=ST[s][0]; $("stSub").textContent=ST[s][1]; }
+function toggle(id, cls, invert){ const b=$(id); b.onclick=()=>{ const on=b.getAttribute("aria-pressed")!=="true"; b.setAttribute("aria-pressed", on); if(cls) document.body.classList.toggle(cls, invert ? !on : on); }; }
+toggle("tgText","hide-text",true); toggle("tgKo","show-ko"); toggle("tgAuto");
+
+async function say(text){
+  if(!tts || !text) return;
+  if(listening && dict){ try{ await dict.stop(); }catch(e){} }
+  try{ await tts.speak(text, {voice:$("voice").value, rate:+$("rate").value, language:S.lang}); }catch(e){}
+}
+
+function addMsg(who, text, ko){
+  const d=document.createElement("div"); d.className="msg "+who;
+  const t=document.createElement("div"); t.className="t"; t.textContent=text; d.append(t);
+  if(who==="tutor"){
+    const k=document.createElement("div"); k.className="ko"; k.textContent=ko||""; d.append(k);
+    t.onclick=()=>d.classList.add("reveal");
+    const tl=document.createElement("div"); tl.className="tools";
+    const r=document.createElement("button"); r.textContent="다시 듣기"; r.onclick=()=>say(text);
+    const v=document.createElement("button"); v.textContent="이것만 보기"; v.onclick=()=>d.classList.toggle("reveal");
+    tl.append(r,v); d.append(tl);
+  }
+  $("log").append(d); d.scrollIntoView({behavior:"smooth",block:"end"});
+  return d;
+}
+function addFix(fx){
+  const d=document.createElement("div"); d.className="fix";
+  d.innerHTML=`더 자연스럽게: <b></b><div class="why"></div>`;
+  d.querySelector("b").textContent=fx.better; d.querySelector(".why").textContent=fx.why_ko||"";
+  $("log").append(d); fx.el=d;
+}
+
+/* ---------- Claude ---------- */
+async function ask(prompt, tier){
+  const e = await loadEngine();
+  const r = await e.chat.completions.create({
+    messages:[{role:"system",content:"You are a kind language tutor. Always reply with ONE valid JSON object and nothing else."},{role:"user",content:prompt}],
+    response_format:{type:"json_object"}, temperature: tier==="quick" ? 0.2 : 0.7, max_tokens: 900 });
+  const text = r.choices?.[0]?.message?.content || "";
+  return JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}")+1));
+}
+const LNAME = () => S.lang==="en" ? "English" : "French";
+function transcript(){ return S.history.map(m=>(m.role==="tutor"?"Tutor: ":"Learner: ")+m.text).join("\n"); }
+function turnPrompt(){
+  return `You are a warm, encouraging ${LNAME()} conversation tutor talking out loud with a learner. Speak ONLY ${LNAME()} in "reply".
+Level: ${LV[S.level]}. Topic: ${S.topic}.
+${getProfile()}
+
+Rules:
+- Keep each reply short and natural for speech, and end with ONE question that keeps the conversation going on the topic.
+- The learner's words come from speech-to-text: ignore punctuation, capitalisation and obvious transcription slips; correct only real grammar, word choice or unnatural phrasing.
+- If the learner's LAST message has a real mistake: put it in "correction", briefly acknowledge what they meant, then in "reply" invite them to say the better sentence once (e.g. "Try saying: ..."), and set "awaiting_retry": true. Do not ask a new question in that turn.
+- If you were waiting for a retry (${S.retry ? `expected: "${S.retry.better}"` : "not waiting now"}): judge the learner's last message. If it is close enough set "retry_ok": true, praise briefly and continue the conversation with a new question. If not, set "retry_ok": false, give the sentence once more slowly in a friendly way, then move on next time.
+- If the learner writes Korean or says they don't know, help them with the phrase in ${LNAME()} and ask them to try it.
+- If the transcript is empty, greet Eunsu by name and open the topic with a first question.
+
+Conversation so far:
+${transcript() || "(empty)"}
+
+Return JSON only: {"reply": string, "reply_ko": string (Korean translation of reply), "correction": null or {"said": string, "better": string, "why_ko": string (one short Korean sentence)}, "awaiting_retry": boolean, "retry_ok": null or boolean}`;
+}
+
+async function tutorTurn(){
+  S.busy=true; orb("thinking"); $("send").disabled=true;
+  try{
+    const r = await ask(turnPrompt());
+    if(S.retry && r.retry_ok===true){ S.retry.ok=true; const s=document.createElement("div"); s.className="done"; s.textContent="다시 말하기 성공"; S.retry.el?.append(s); }
+    if(S.retry && r.retry_ok!==null && r.retry_ok!==undefined) S.retry = (r.retry_ok ? null : S.retry);
+    if(r.correction && r.correction.better){ const fx={...r.correction}; S.fixes.push(fx); addFix(fx); S.retry=fx; }
+    if(!r.awaiting_retry && !r.correction && r.retry_ok!==false) S.retry=null;
+    $("retry").classList.toggle("on", !!S.retry);
+    if(S.retry) $("retry").textContent = "다시 말해보기: " + S.retry.better;
+    S.history.push({role:"tutor", text:r.reply});
+    addMsg("tutor", r.reply, r.reply_ko);
+    S.busy=false; orb("idle"); $("send").disabled=false;
+    await say(r.reply);
+  }catch(e){
+    S.busy=false; orb("idle"); $("send").disabled=false;
+    const m = e && e.code==="no_webgpu" ? "이 브라우저는 WebGPU를 지원하지 않아 AI를 돌릴 수 없어요. PC용 최신 크롬이나 엣지에서 열어주세요." : "답을 만들지 못했어요. 다시 보내주세요. 계속 안 되면 더 가벼운 AI 모델로 바꿔보세요.";
+    const d=document.createElement("div"); d.className="warn"; d.textContent=m; $("log").append(d);
+  }
+}
+async function send(){
+  const text=$("inp").value.trim(); if(!text || S.busy) return;
+  if(listening && dict){ try{ await dict.stop(); }catch(e){} }
+  $("inp").value=""; S.base="";
+  const el = addMsg("me", text);
+  if(S.retry) S.retry.el = S.retry.el || el;
+  S.history.push({role:"learner", text});
+  tutorTurn();
+}
+$("send").onclick=send;
+$("inp").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.isComposing){ e.preventDefault(); send(); } });
+$("mic").onclick=()=>{
+  if(!dict) return;
+  if(listening){ dict.stop().catch(()=>{}); return; }
+  if(tts) try{ tts.stop(); }catch(e){}
+  S.base=$("inp").value.trim(); dict.lang = S.lang==="fr" ? "fr-FR" : "en-US";
+  dict.start().catch(e=>{ if(e && e.code==="not_granted") $("mic").hidden=true; });
+};
+$("start").onclick=()=>{
+  const c=$("customTopic").value.trim(); if(c) S.topic=c;
+  S.history=[]; S.fixes=[]; S.retry=null; S.started=Date.now(); $("log").innerHTML=""; brief();
+  document.body.classList.add("live"); show("vTalk"); tutorTurn();
+};
+
+/* ---------- finish ---------- */
+$("finish").onclick=async()=>{
+  if(S.busy) return;
+  if(S.history.filter(m=>m.role==="learner").length===0){ document.body.classList.remove("live"); show("vSetup"); return; }
+  if(tts) try{ tts.stop(); }catch(e){}
+  if(listening && dict) try{ await dict.stop(); }catch(e){}
+  document.body.classList.remove("live"); show("vSum");
+  $("vSum").innerHTML=`<h2 style="font-size:24px">수업 정리 중…</h2><p class="note">교정한 문장과 퀴즈를 만들고 있어요.</p>`;
+  let r;
+  try{
+    r = await ask(`You are a ${LNAME()} tutor writing a post-lesson note in Korean for Eunsu (level ${S.level}, topic "${S.topic}").
+Corrections made live: ${JSON.stringify(S.fixes.map(f=>({said:f.said,better:f.better,retried_ok:!!f.ok})))}
+Transcript:
+${transcript()}
+
+Include every live correction, plus any other awkward learner sentence you notice. Return JSON only:
+{"title_ko": short Korean session title,
+ "corrections":[{"said":string,"better":string,"why_ko":string}],
+ "key_expressions":[{"expr":string in ${LNAME()},"meaning_ko":string}] (3–6, useful phrases from this lesson),
+ "strengths_ko": one or two Korean sentences on what went well,
+ "next_focus_ko": one Korean sentence on what to practise next,
+ "quiz":[{"prompt_ko": Korean situation or meaning to say in ${LNAME()}, "answer": model ${LNAME()} sentence, "hint": short hint}] (5–6 items, built from the corrections first, then the key expressions)}`, "default");
+  }catch(e){
+    $("vSum").innerHTML=`<h2 style="font-size:24px">정리를 만들지 못했어요</h2><p class="note">대화 내용은 아직 화면에 남아 있어요.</p><button id="again">다시 시도</button> <button id="back">대화로 돌아가기</button>`;
+    $("again").onclick=()=>$("finish").onclick(); $("back").onclick=()=>{ document.body.classList.add("live"); show("vTalk"); };
+    return;
+  }
+  const sess = {id:"s"+Date.now(), date:new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"}), lang:S.lang, level:S.level, topic:S.topic, ...r, transcript:S.history};
+  renderSummary(sess);
+  storeLocal(sess); exportNotes(sess);
+};
+
+function renderSummary(s){
+  const L = s.lang==="en"?"영어":"프랑스어";
+  $("vSum").innerHTML = `<h2 style="font-size:26px"></h2>
+  <p class="note">${esc(s.date)} · ${L} · ${esc(s.level)} · ${esc(s.topic)}</p>
+  <h3>헷갈렸거나 어색했던 표현</h3>
+  ${s.corrections?.length ? `<table class="stack"><thead><tr><th>내가 한 말</th><th>자연스러운 표현</th><th>설명</th></tr></thead><tbody>${s.corrections.map(c=>`<tr><td>${esc(c.said)}</td><td><b>${esc(c.better)}</b></td><td>${esc(c.why_ko)}</td></tr>`).join("")}</tbody></table>` : `<p>이번 대화에서는 고칠 문장이 없었어요.</p>`}
+  <h3>핵심 표현</h3><ul>${(s.key_expressions||[]).map(k=>`<li><b>${esc(k.expr)}</b> — ${esc(k.meaning_ko)}</li>`).join("")}</ul>
+  <h3>잘한 점</h3><p>${esc(s.strengths_ko)}</p>
+  <h3>다음에 연습할 것</h3><p>${esc(s.next_focus_ko)}</p>
+  <div class="status" id="nStatus"></div>
+  <div class="row" style="margin-top:18px"><button class="big" id="goQuiz">이 수업 퀴즈 풀기</button><button id="newTalk">새 대화</button></div>`;
+  $("vSum").querySelector("h2").textContent = s.title_ko || "오늘의 수업";
+  $("goQuiz").onclick=()=>{ tab("quiz"); show("vQuiz"); startQuiz([s]); };
+  $("newTalk").onclick=()=>{ S.history=[]; show("vSetup"); };
+}
+
+/* ---------- storage ---------- */
+function loadLocal(){ try{ return JSON.parse(localStorage.getItem("ts-sessions")||"[]"); }catch(e){ return []; } }
+function storeLocal(s){ try{ const a=loadLocal().filter(x=>x.id!==s.id); a.unshift(s); localStorage.setItem("ts-sessions", JSON.stringify(a.slice(0,60))); }catch(e){} }
+async function col(){ if(!db || !user) return null; try{ const id=await user.id(); return id ? db.collection("data/users/"+id) : null; }catch(e){ return null; } }
+async function storeDb(s){ try{ const c=await col(); if(c){ const {transcript, ...rest}=s; await c.doc(s.id).set(rest); } }catch(e){} }
+async function loadDb(){
+  try{ const c=await col(); if(!c) return [];
+    const snap = await Promise.race([c.get(), new Promise((_,j)=>setTimeout(()=>j("t"),10000))]);
+    const docs = snap?.docs || (Array.isArray(snap)?snap:[]);
+    return docs.map(d=> typeof d.data==="function" ? d.data() : (d.data||d)).filter(x=>x && x.id);
+  }catch(e){ return []; }
+}
+
+function notesMd(s){
+  const L = s.lang==="en"?"영어":"프랑스어";
+  return [
+    `# ${s.title_ko || L+" 회화"} (${s.date})`, `${L} · ${s.level} · ${s.topic}`, ``,
+    `## 헷갈렸거나 어색했던 표현`,
+    ...(s.corrections?.length ? s.corrections.map(c=>`- ❌ ${c.said}\n\t- ✅ **${c.better}** — ${c.why_ko}`) : ["- 이번 대화에서는 고칠 문장이 없었어요."]),
+    `## 핵심 표현`, ...(s.key_expressions||[]).map(k=>`- [ ] **${k.expr}** — ${k.meaning_ko}`),
+    `## 잘한 점`, s.strengths_ko||"", `## 다음에 연습할 것`, s.next_focus_ko||"",
+    `## 복습 퀴즈`, ...(s.quiz||[]).map((q,i)=>`${i+1}. ${q.prompt_ko}\n\t- 정답: ${q.answer}`),
+    `## 대화 전문`, ...(s.transcript||[]).map(m=>`- **${m.role==="tutor"?"Tutor":"나"}**: ${m.text}`)
+  ].join("\n");
+}
+function exportNotes(s){
+  const st=$("nStatus"); st.innerHTML="";
+  const t=document.createElement("span"); t.textContent="이 브라우저에 저장했어요. 노션에 붙여넣으려면: ";
+  const c=document.createElement("button"); c.textContent="노션용으로 복사"; c.style.margin="4px 6px";
+  c.onclick=async()=>{ try{ await navigator.clipboard.writeText(notesMd(s)); c.textContent="복사했어요"; }catch(e){ c.textContent="복사 실패"; } };
+  const d=document.createElement("button"); d.textContent=".md 파일로 저장"; d.style.margin="4px 0";
+  d.onclick=()=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([notesMd(s)],{type:"text/markdown"})); a.download=`gongdri-${s.date}-${s.lang}.md`; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); };
+  st.append(t,c,d);
+}
+
+/* ---------- quiz ---------- */
+async function renderSessions(){
+  $("vQuiz").innerHTML=`<h2 style="font-size:24px">복습 퀴즈</h2><p class="note">불러오는 중…</p>`;
+  const map=new Map(); for(const s of [...await loadDb(), ...loadLocal()]) if(!map.has(s.id)) map.set(s.id, s);
+  const list=[...map.values()].sort((a,b)=>b.id.localeCompare(a.id));
+  if(!list.length){ $("vQuiz").innerHTML=`<h2 style="font-size:24px">복습 퀴즈</h2><p>아직 저장된 수업이 없어요. 회화를 하고 <b>완료</b>를 누르면 여기에 쌓여요.</p>`; return; }
+  $("vQuiz").innerHTML=`<h2 style="font-size:24px">어떤 수업을 복습할까요?</h2><div id="sl"></div><div style="margin-top:18px"><button class="big" id="qGo">선택한 수업으로 퀴즈</button></div>`;
+  $("sl").innerHTML = list.map((s,i)=>`<label class="sess"><input type="checkbox" data-i="${i}" ${i<3?"checked":""}><span><b>${esc(s.title_ko||s.topic)}</b><br><span class="note">${esc(s.date)} · ${s.lang==="en"?"영어":"프랑스어"} · 교정 ${(s.corrections||[]).length}개 · 문제 ${(s.quiz||[]).length}개</span></span></label>`).join("");
+  $("qGo").onclick=()=>{ const pick=[...$("sl").querySelectorAll("input:checked")].map(x=>list[+x.dataset.i]); if(pick.length) startQuiz(pick); };
+}
+let Q=null;
+function startQuiz(sessions){
+  const items=[]; for(const s of sessions) for(const q of (s.quiz||[])) items.push({...q, lang:s.lang});
+  for(let i=items.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [items[i],items[j]]=[items[j],items[i]]; }
+  Q={items:items.slice(0,10), i:0, right:0, part:0, wrong:0};
+  if(!Q.items.length){ $("vQuiz").innerHTML="<p>이 수업에는 퀴즈 문제가 없어요.</p>"; return; }
+  qRender();
+}
+function qRender(){
+  const q=Q.items[Q.i];
+  if(!q){ $("vQuiz").innerHTML=`<h2 style="font-size:24px">퀴즈 끝</h2><div class="score">${Q.right} / ${Q.items.length}</div><p>맞음 ${Q.right} · 부분 정답 ${Q.part} · 틀림 ${Q.wrong}</p><button id="qBack">다른 수업 고르기</button>`; $("qBack").onclick=renderSessions; return; }
+  const LN = q.lang==="en"?"영어":"프랑스어";
+  $("vQuiz").innerHTML=`<div class="qcard"><p class="note">${Q.i+1} / ${Q.items.length} · ${LN}로 말해보세요</p><h2></h2>
+   <div class="row" style="flex-wrap:nowrap"><button class="mic" id="qMic" aria-label="말하기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><input type="text" id="qIn" placeholder="말하거나 입력하세요" autocomplete="off"></div>
+   <div class="row" style="margin-top:12px"><button class="big" id="qCheck">확인</button><button id="qHint">힌트</button><button id="qSkip">정답 보기</button></div>
+   <div id="qOut" class="status" hidden></div></div>`;
+  $("vQuiz").querySelector("h2").textContent=q.prompt_ko;
+  if(!dict) $("qMic").hidden=true;
+  $("qMic").onclick=()=>{ if(!dict) return; if(listening){ dict.stop().catch(()=>{}); return; }
+    if(tts) try{ tts.stop(); }catch(e){}
+    S.base=$("qIn").value.trim(); dict.lang = q.lang==="fr" ? "fr-FR" : "en-US"; dict.start().catch(()=>{}); };
+  $("qHint").onclick=()=>{ out(`힌트: ${q.hint||"-"}`); };
+  $("qSkip").onclick=()=>{ Q.wrong++; reveal(q,"정답을 먼저 봤어요."); };
+  $("qCheck").onclick=async()=>{
+    const a=$("qIn").value.trim(); if(!a) return; $("qCheck").disabled=true; out("채점 중…");
+    try{
+      const g=await ask(`Grade a ${q.lang==="en"?"English":"French"} learner's spoken answer (speech-to-text; ignore punctuation/capitalisation). Task (Korean): "${q.prompt_ko}". Model answer: "${q.answer}". Learner said: "${a}". Accept other natural, correct ways to say it. Return JSON only: {"verdict":"right"|"partly"|"wrong","feedback_ko":one short Korean sentence,"better":the best version of the learner's sentence}`, "quick");
+      if(g.verdict==="right") Q.right++; else if(g.verdict==="partly") Q.part++; else Q.wrong++;
+      reveal(q, `${g.verdict==="right"?"맞았어요":g.verdict==="partly"?"거의 맞았어요":"아쉬워요"} — ${g.feedback_ko||""}`, g.better);
+    }catch(e){ $("qCheck").disabled=false; out("채점을 하지 못했어요. 다시 눌러주세요."); }
+  };
+  $("qIn").addEventListener("keydown", e=>{ if(e.key==="Enter"&&!e.isComposing) $("qCheck").click(); });
+}
+function out(t){ const o=$("qOut"); o.hidden=false; o.textContent=t; }
+function reveal(q, msg, better){
+  const o=$("qOut"); o.hidden=false; o.innerHTML="";
+  const p=document.createElement("p"); p.style.margin="0 0 6px"; p.textContent=msg;
+  const m=document.createElement("p"); m.style.margin="0 0 10px"; m.innerHTML="모범 답안: <b></b>"; m.querySelector("b").textContent=q.answer;
+  o.append(p,m);
+  if(better && better!==q.answer){ const b=document.createElement("p"); b.style.margin="0 0 10px"; b.textContent="내 문장을 다듬으면: "+better; o.append(b); }
+  const r=document.createElement("div"); r.className="row";
+  const l=document.createElement("button"); l.textContent="정답 듣기"; l.onclick=()=>{ if(tts) tts.speak(q.answer,{voice:$("voice").value, rate:+$("rate").value, language:q.lang}).catch(()=>{}); };
+  const n=document.createElement("button"); n.className="big"; n.textContent="다음"; n.onclick=()=>{ Q.i++; qRender(); };
+  r.append(l,n); o.append(r);
+  $("qCheck").disabled=true;
+  if(tts) tts.speak(q.answer,{voice:$("voice").value, rate:+$("rate").value, language:q.lang}).catch(()=>{});
+}
+}
+</script>
+</body>
+</html>
